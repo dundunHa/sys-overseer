@@ -1,0 +1,11 @@
+[package]
+name = "system_monitor"
+version = "0.1.0"
+edition = "2021"
+authors = ["dundunHa <lixinpengde@gmail.com>"]
+
+[dependencies]
+sysinfo = "0.33.0"
+ratatui = "0.29.0"
+crossterm = "0.28.1"
+lazy_static = "1.5.0"
