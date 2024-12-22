@@ -1,5 +1,5 @@
 use std::io;
-use system_monitor::ui::layout::run_app;
+use sys_overseer::ui::layout::run_app;
 
 
 fn main() -> io::Result<()> {

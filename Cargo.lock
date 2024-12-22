@@ -534,6 +534,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "sys-overseer"
+version = "0.1.0"
+dependencies = [
+ "crossterm",
+ "lazy_static",
+ "libc",
+ "ratatui",
+ "sysinfo",
+ "winapi",
+]
+
+[[package]]
 name = "sysinfo"
 version = "0.33.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -545,18 +557,6 @@ dependencies = [
  "ntapi",
  "rayon",
  "windows",
-]
-
-[[package]]
-name = "system_monitor"
-version = "0.1.0"
-dependencies = [
- "crossterm",
- "lazy_static",
- "libc",
- "ratatui",
- "sysinfo",
- "winapi",
 ]
 
 [[package]]

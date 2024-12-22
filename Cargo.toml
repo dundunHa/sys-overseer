@@ -1,5 +1,5 @@
 [package]
-name = "system_monitor"
+name = "sys-overseer"
 version = "0.1.0"
 edition = "2021"
 authors = ["dundunHa <lixinpengde@gmail.com>"]
