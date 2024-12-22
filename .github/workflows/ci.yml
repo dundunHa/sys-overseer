@@ -8,6 +8,11 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions:
+  contents: write    # 这给予了创建 release 的权限
+  packages: write
+  pull-requests: write
+
 env:
   CARGO_TERM_COLOR: always
   # 设置二进制文件名称
