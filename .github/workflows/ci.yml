@@ -18,7 +18,7 @@ env:
   BINARY_NAME: sys-overseer
 
 jobs:
-  build:2
+  build:
     name: Build ${{ matrix.target }}
     strategy:
       matrix:
@@ -26,6 +26,7 @@ jobs:
           # Linux x86_64 构建
           - target: x86_64-linux-gnu
             os: ubuntu-latest
+            cross: true
             
           # Linux ARM64 构建
           - target: aarch64-linux-gnu
