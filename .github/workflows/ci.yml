@@ -18,7 +18,7 @@ env:
   BINARY_NAME: sys-overseer
 
 jobs:
-  build:
+  build:2
     name: Build ${{ matrix.target }}
     strategy:
       matrix:
