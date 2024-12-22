@@ -18,9 +18,14 @@ lazy_static! {
 pub fn get_system_snapshot() -> SystemSnapshot {
     let mut sys = SYSTEM.lock().unwrap();
     sys.refresh_cpu_usage();
+    sys.refresh_memory();
     let cpu_usage = sys.global_cpu_usage();
+    let memory_used = sys.used_memory();
+    let memory_total = sys.total_memory();
     SystemSnapshot {
         cpu_usage,
+        memory_used,
+        memory_total,
         ..Default::default()
     }
 }

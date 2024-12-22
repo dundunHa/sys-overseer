@@ -1,22 +1,32 @@
 use ratatui::{
-    style::{Color, Style},
+    style::{Color, Modifier, Style},
     symbols,
-    widgets::{Axis, Block, Borders, Chart, Dataset, GraphType},
+    text::Text,
+    widgets::{Axis, Block, Borders, Chart, Dataset, GraphType, Paragraph},
 };
+use std::default::Default;
+use crate::sys::network_stats::NetworkMonitor;
 
-
+#[derive(Default)]
 pub struct ChartState {
     data_points: Vec<(f64, f64)>,
     window_size: usize,
-    current_x: f64, 
-}
+    current_x: f64,
+    pub cpu_usage: f64,
+    pub memory_used: f64,
+    pub memory_total: f64,
+    pub network_monitor: NetworkMonitor
 
+
+}
 impl ChartState {
     pub fn new(window_size: usize) -> Self {
         Self {
             data_points: Vec::new(),
             window_size,
             current_x: 0.0,
+            network_monitor: NetworkMonitor::new(),
+            ..Default::default()
         }
     }
 
@@ -33,35 +43,112 @@ impl ChartState {
         }
     }
 
-    pub fn render<'a>(&'a self) -> Chart<'a> {
-        let datasets = vec![Dataset::default()
+    pub fn render(&self) -> Chart<'_> {
+        // 创建数据集
+        let dataset = Dataset::default()
             .name("CPU Usage")
             .marker(symbols::Marker::Braille)
-            .graph_type(GraphType::Line)  // 改用线图可能更适合展示 CPU 使用率
+            .graph_type(GraphType::Line)
             .style(Style::default().fg(Color::Magenta))
-            .data(&self.data_points)];
+            .data(&self.data_points);
 
-        let x_bounds = if !self.data_points.is_empty() {
-            [0.0, self.window_size as f64]
-        } else {
-            [0.0, self.window_size as f64]
-        };
+        let x_bounds = [0.0, self.window_size as f64];
 
-        Chart::new(datasets)
-            .block(Block::default().title("CPU Usage").borders(Borders::ALL))
+        let y_labels = ["0%", "25%", "50%", "75%", "100%"]
+            .iter()
+            .map(|s| s.to_string())
+            .collect::<Vec<_>>();
+
+        Chart::new(vec![dataset])
+            .block(
+                Block::default()
+                    .title("CPU Usage (%) - Real-time")
+                    .borders(Borders::ALL),
+            )
             .x_axis(
                 Axis::default()
                     .bounds(x_bounds)
-                    .labels(vec![
-                        format!("{:.0}", x_bounds[0]),
-                        format!("{:.0}", x_bounds[1] / 2.0),
-                        format!("{:.0}", x_bounds[1])
-                    ])
+                    .labels(vec!["".to_string()]),
             )
-            .y_axis(
-                Axis::default()
-                    .bounds([0.0, 100.0])
-                    .labels(vec!["0".to_string(), "50".to_string(), "100".to_string()])
-            )
+            .y_axis(Axis::default().bounds([0.0, 100.0]).labels(y_labels))
+    }
+
+    pub fn render_sys_info<'a>(&'a mut self) -> Paragraph<'a> {
+        //
+        let cpu_info = format!("CPU Usage: {:.1}%", self.cpu_usage);
+        let memory_usage = format!(
+            "Memory Usage: {:.1}%",
+            self.memory_used / self.memory_total * 100.0
+        );
+        let memory_info = format!("Memory Used: {}", self.format_bytes(self.memory_used));
+        let memory_total = format!("Memory Total: {}", self.format_bytes(self.memory_total));
+
+        let (tx,rx) = self.network_monitor.get_network_info();
+        let tx_label = format!("TX: {}/s", self.format_network_speed(tx));
+        let rx_label = format!("RX: {}/s", self.format_network_speed(rx));
+        let text = Text::styled(
+            format!(
+                "{cpu_info}\n\n{memory_info}\n{memory_total}\n{memory_usage}\n\n{tx_label}\n{rx_label}",
+            ),
+            Style::default()
+                .fg(Color::White)
+                .add_modifier(Modifier::BOLD),
+        );
+
+        Paragraph::new(text)
+            .block(Block::default().title("System Info").borders(Borders::ALL))
+            .style(Style::default())
+    }
+
+    pub fn render_botom_bar(& self) -> Paragraph {
+        let quit_text = "<q> Quit";
+
+        let text = Text::styled(
+            quit_text,
+            Style::default()
+                .fg(Color::White)
+                .add_modifier(Modifier::BOLD),
+        );
+
+        Paragraph::new(text)
+            .block(Block::default().title("Help").borders(Borders::ALL))
+            .style(Style::default())
+    }
+    fn format_bytes(&self, bytes: f64) -> String {
+        const KB: f64 = 1024.0;
+        const MB: f64 = KB * 1024.0;
+        const GB: f64 = MB * 1024.0;
+
+        let size = bytes as f64;
+
+        if size >= GB {
+            format!("{:.2} GB", size / GB)
+        } else if size >= MB {
+            format!("{:.2} MB", size / MB)
+        } else if size >= KB {
+            format!("{:.2} KB", size / KB)
+        } else {
+            format!("{} bytes", bytes)
+        }
+    }
+
+    pub fn format_network_speed(&self,bytes: u64) -> String {
+        const KB: f64 = 1024.0;
+        const MB: f64 = KB * KB;
+        const GB: f64 = KB * KB * KB;
+    
+        let result = match bytes as f64 {
+            bytes if bytes >= GB => {
+                format!("{:.2} GB", bytes / GB)
+            },
+            bytes if bytes >= MB => {
+                format!("{:.2} MB", bytes / MB)
+            },
+            bytes => {
+                format!("{:.2} KB", bytes / KB)
+            }
+        };
+    
+        result
     }
 }
