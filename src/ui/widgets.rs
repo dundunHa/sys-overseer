@@ -62,7 +62,7 @@ impl ChartState {
         Chart::new(vec![dataset])
             .block(
                 Block::default()
-                    .title("CPU Usage (%) - Real-time")
+                    .title("Usage(%) - Real-time")
                     .borders(Borders::ALL),
             )
             .x_axis(
@@ -83,7 +83,7 @@ impl ChartState {
         let memory_info = format!("Memory Used: {}", self.format_bytes(self.memory_used));
         let memory_total = format!("Memory Total: {}", self.format_bytes(self.memory_total));
 
-        let (tx,rx) = self.network_monitor.get_network_info();
+        let (tx,rx,_,_) = self.network_monitor.get_network_info();
         let tx_label = format!("TX: {}/s", self.format_network_speed(tx));
         let rx_label = format!("RX: {}/s", self.format_network_speed(rx));
         let text = Text::styled(
